@@ -1,0 +1,54 @@
+
+Pseudocodigo (educación):
+
+# Paso 1: Conseguir los datos de los estudiantes (busque en internet)
+datos_estudiantes = leer_archivo("notas_colegio.xlsx")
+
+# Las variables importantes son:
+# - notas_anteriores (de 0 a 10)
+# - asistencia (porcentaje de 0 a 100)
+# - situacion_economica (1=baja, 2=media, 3=alta)
+
+# Paso 2: Limpiar los datos (algunos tenían valores raros)
+para cada estudiante en datos_estudiantes:
+    si estudiante["notas_anteriores"] == "NA":
+        estudiante["notas_anteriores"] = 5  # Pongo el promedio
+    si estudiante["asistencia"] > 100:
+        estudiante["asistencia"] = 100  # No puede ser más de 100%
+
+# Paso 3: Preparar los datos para la red neuronal
+X = []  # Aquí van las características
+y = []  # Aquí van los resultados (1=reprobó, 0=pasó)
+
+para cada estudiante in datos_estudiantes:
+    X.append([estudiante["notas_anteriores"], 
+             estudiante["asistencia"]/100,  # Lo convierto a 0-1
+             estudiante["situacion_economica"]/3])  # También 0-1
+    
+    si estudiante["reprobó"] == "SI":
+        y.append(1)
+    sino:
+        y.append(0)
+
+# Paso 4: Crear la red neuronal 
+red_neuronal = nueva RedNeuronal()
+red_neuronal.agregar(Capa(64, activacion='relu'))  # Capa oculta
+red_neuronal.agregar(Capa(1, activacion='sigmoid'))  # Capa de salida
+
+# Paso 5: Configurar y entrenar
+red_neuronal.configurar(optimizador='adam', perdida='binary_crossentropy')
+red_neuronal.entrenar(X, y, epocas=50, validacion=0.2)
+
+# Paso 6: Probar con datos nuevos
+mi_datos = [7.5, 0.92, 0.66]  # Mis notas: 7.5, asistencia 92%, situación económica media
+resultado = red_neuronal.predecir(mi_datos)
+
+si resultado > 0.7:
+    imprimir("CUIDADO: Tienes riesgo de reprobar :(")
+sino si resultado > 0.4:
+    imprimir("Regular: Podrías mejorar")
+sino:
+    imprimir("Vas bien! Sigue así :)")
+
+# Paso 7: Guardar el modelo para no tener que entrenarlo siempre
+guardar_modelo(red_neuronal, "modelo_colegio.h5")
